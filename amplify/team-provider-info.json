@@ -1,0 +1,20 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-amplify2e2ef2b6de314-staging-62941-authRole",
+      "UnauthRoleArn": "arn:aws:iam::738533757588:role/amplify-amplify2e2ef2b6de314-staging-62941-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::738533757588:role/amplify-amplify2e2ef2b6de314-staging-62941-authRole",
+      "Region": "ap-northeast-1",
+      "DeploymentBucketName": "amplify-amplify2e2ef2b6de314-staging-62941-deployment",
+      "UnauthRoleName": "amplify-amplify2e2ef2b6de314-staging-62941-unauthRole",
+      "StackName": "amplify-amplify2e2ef2b6de314-staging-62941",
+      "StackId": "arn:aws:cloudformation:ap-northeast-1:738533757588:stack/amplify-amplify2e2ef2b6de314-staging-62941/bf2fa680-5109-11ed-99e6-0666c1c21661",
+      "AmplifyAppId": "d3qfav5lsu35i4"
+    },
+    "categories": {
+      "auth": {
+        "Politimap": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+html {
+    font-family: system-ui, sans-serif;
+    font-size: 0.8rem;
+  }
+  svg {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  a {
+    text-decoration: none;
+  }
+.logo{
+  max-width: 120px;
+}
+.map-container {
+  text-align: center;
+}
+#keepinside{
+  width: 84%;
+  padding-left: 15%;
+}
+.party-logo {
+  width: 20px;
+  margin-left: 20px;
+}
+.image-container{
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.trump {
+  width: 80px;
+  border-radius: 10px;
+}
+.trump-group {
+  border: none !important;
+  border-radius: 0;
+}
+.trump-group .d-flex {
+  border-right: none;
+  border-left: none;
+}
+.profile-card-title {
+  text-align: center;
+  font-size: x-large;
+  font-weight: 300;
+  color: #272746;
+}
+.my-footer {
+    padding-top: 20px;
+    padding-bottom: 10px;
+    background-color: #eee;
+    margin-top: 20px;
+}
+.card-body{
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.spinner-border {
+  width: 15px;
+  height: 15px;
+}
+.card-img-top {
+  border-radius: 5px;
+}
+.committee-name {
+  padding-top: 20px;
+  color: rgb(104, 103, 103);
+}

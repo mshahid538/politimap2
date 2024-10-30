@@ -1,0 +1,14 @@
+{
+  "resourceName": "s3politimapstorage5e73cf86",
+  "bucketName": "politimap-storage-5e73cf86",
+  "policyUUID": "f42e2ef8",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ]
+}
