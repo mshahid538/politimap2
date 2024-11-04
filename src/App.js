@@ -10,9 +10,13 @@ function App({ signOut, user }) {
   console.log(user);
   return (
     <React.Fragment>
-      <NavBar signOut={signOut} user={user} />
-      <MyRoutes />
-      <Footer />
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <NavBar signOut={signOut} user={user} />
+        <main style={{ flex: '1' }}>
+          <MyRoutes />
+        </main>
+        <Footer />
+    </div>
     </React.Fragment>
   );
 }

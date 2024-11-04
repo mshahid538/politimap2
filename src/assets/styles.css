@@ -14,6 +14,7 @@ html {
 }
 .map-container {
   text-align: center;
+  width: 100%;
 }
 #keepinside{
   width: 84%;
