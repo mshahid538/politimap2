@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Grid, View, useTheme, SelectField } from '@aws-amplify/ui-react';
+import { Grid, View, useTheme, SelectField , TextField} from '@aws-amplify/ui-react';
 import MapChart from "../components/map";
 import '@aws-amplify/ui-react/styles.css';
 
 function MapPage() {
     const { tokens } = useTheme();
 
-    const [electionCycle, setElectionCycle] = useState("2023-2024");
+    const [electionCycle, setElectionCycle] = useState("2024");
     const [office, setOffice] = useState("S");
+    const [searchTerm, setSearchTerm] = useState("");
 
     const officeNames = {
         S: "Senate",
@@ -18,8 +19,8 @@ function MapPage() {
 
     const generateElectionCycles = () => {
         const cycles = [];
-        for (let year = 1975; year <= 2026; year += 2) {
-            cycles.push(`${year}-${year + 1}`);
+        for (let year = 2024; year >= 1980; year -= 2) {
+            cycles.push(year);  // Add only the even year
         }
         return cycles;
     };
@@ -28,10 +29,11 @@ function MapPage() {
         <React.Fragment>
             <div className="large">
                 <div className="text-center">
-                    <h1>INTERACTIVE ELECTION MAP – {electionCycle}</h1>
+                    <h1>INTERACTIVE ELECTION MAP – {electionCycle - 1 }-{electionCycle}</h1>
                     <h5>
-                    <span style={{ textTransform: 'uppercase' }}>{officeNames[office]}</span> ELECTIONS MAP
-                </h5>
+                        <span style={{ textTransform: 'uppercase' }}>{officeNames[office]}</span> ELECTIONS MAP
+                    </h5>
+                    
                 </div>
                 <div className="map-container" style={{ padding: '0 20px' }}>
                     <Grid
@@ -55,7 +57,7 @@ function MapPage() {
                             >
                                 {generateElectionCycles().map((cycle) => (
                                     <option key={cycle} value={cycle}>
-                                        {cycle}
+                                        {cycle - 1}-{cycle}
                                     </option>
                                 ))}
                             </SelectField>
@@ -78,7 +80,7 @@ function MapPage() {
                             height="100%"
                         >
                             {/* Pass electionCycle and office as props */}
-                            <MapChart electionCycle={electionCycle} office={office} />
+                            <MapChart electionCycle={electionCycle} office={office} terms={searchTerm} />
                         </View>
                         
                         {/* Right Column for additional information */}
@@ -88,10 +90,31 @@ function MapPage() {
                             boxShadow="0 2px 4px rgba(0,0,0,0.1)"
                             marginRight={20}
                         >
-                            <h4>Additional Information</h4>
-                            {/* You can add content here, or leave it empty */}
+                            <h4>Search Candidate by Name</h4>
+                            <TextField
+                                label=""
+                                placeholder="Type name"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                marginBottom={tokens.space.small}
+                            />
                         </View>
                     </Grid>
+                    {/* Party Legend Section */}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
+                            <div style={{ width: '20px', height: '20px', backgroundColor: '#0000FF', marginRight: '5px' }}></div>
+                            <span>Democratic (DEM)</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
+                            <div style={{ width: '20px', height: '20px', backgroundColor: '#FF0000', marginRight: '5px' }}></div>
+                            <span>Republican (REP)</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div style={{ width: '20px', height: '20px', backgroundColor: '#778899', marginRight: '5px' }}></div>
+                            <span>Independent/Other</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </React.Fragment>

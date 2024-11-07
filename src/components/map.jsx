@@ -9,26 +9,59 @@ import independentLogo from "../assets/logo/independentLogo.jpg";
 const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const API_KEY = "Y26ZeFbtXnbkvefS4HtK1Fc9nCilHguGB3ajrE3L"; // Replace with your actual API key
 
-const MapChart = ({ electionCycle, office }) => {
+const MapChart = ({ electionCycle, office, terms }) => {
     const [candidates, setCandidates] = useState([]);
+    const [allCandidates, setAllCandidates] = useState([]);
     const [clickedCity, setClickedCity] = useState("");
+    const [searchDelay, setSearchDelay] = useState("");
 
     const startYear = electionCycle.split("-")[0];
 
-    // Fetch candidates based on year and office
+    // Debounce search input with delay
     useEffect(() => {
-      const fetchCandidates = async () => {
-          const endpoint = `https://api.open.fec.gov/v1/candidates?office=${office}&election_year=${startYear}&api_key=${API_KEY}`;
-          try {
-              const response = await fetch(endpoint);
-              const data = await response.json();
-              setCandidates(data.results || []);
-          } catch (error) {
-              console.error("Error fetching candidate data:", error);
-          }
-      };
-      fetchCandidates();
-    }, [startYear, office]);
+        const delay = setTimeout(() => {
+            if (terms.length >= 3) {
+                setSearchDelay(terms);
+            } else {
+                setSearchDelay(null);
+            }
+        }, 500);
+
+        return () => clearTimeout(delay);
+    }, [terms]);
+
+    useEffect(() => {
+        const fetchCandidates = async () => {
+            let endpoint = `https://api.open.fec.gov/v1/candidates?per_page=100&incumbent_challenge=I&candidate_status=C&is_active_candidate=true&office=${office}&cycle=${startYear}&page=1&api_key=${API_KEY}`;
+    
+            if (searchDelay && searchDelay.trim()) {
+                endpoint += `&q=${encodeURIComponent(searchDelay)}`;
+            }
+    
+            try {
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                if (searchDelay) {
+                    setCandidates(data.results); // Set filtered data
+                } else {
+                    setAllCandidates(data.results); // Set all candidates
+                    setCandidates(data.results); // Set initial candidates too
+                }
+            } catch (error) {
+                console.error("Error fetching candidate data:", error);
+            }
+        };
+    
+        fetchCandidates();
+    }, [startYear, office, searchDelay]);
+
+    // If the searchDelay is cleared, reset candidates to the full list
+    useEffect(() => {
+        if (!searchDelay) {
+            setCandidates(allCandidates);
+        }
+    }, [searchDelay, allCandidates]);
+    
 
     const stateAbbreviations = {
       "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR",
