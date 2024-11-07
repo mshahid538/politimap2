@@ -18,7 +18,10 @@ html {
 }
 #keepinside{
   width: 84%;
-  padding-left: 15%;
+  padding: 10%;
+  padding-bottom: 0;
+  padding-top: 0;
+
 }
 .party-logo {
   width: 20px;
