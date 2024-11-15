@@ -7,7 +7,7 @@ import republicanLogo from "../assets/logo/republicanLogo.png";
 import independentLogo from "../assets/logo/independentLogo.jpg";
 import Tramp from "../assets/trump.png";
 
-import { Facebook, Instagram, Twitter, Globe, Calendar3 } from 'react-bootstrap-icons';
+import {Globe, Calendar3 } from 'react-bootstrap-icons';
 import {Route, Link, Routes, useParams, json} from 'react-router-dom';
 import NumberConverter from '../functions/NumberConverter';
 import dayjs from "dayjs";
@@ -15,8 +15,10 @@ import dayjs from "dayjs";
 import poliData from "../data/polidata.json";
 
 import stateDataSet from "../data/statedata.json";
+import Donate  from "../components/donate"
 
 function Candidates() {
+
     const loading = <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>
     
     let DEMO_KEY = "M3yT28EhnDUZkvhvSxMlKyYZCPX8mezTzrxU80QT"; //abhishekpaul0055@gmail.com
@@ -68,161 +70,25 @@ function Candidates() {
     <Container>
       <Row>
         <Col xs={12} md={3} lg={3}>
-                <Card >
-                    <div className='image-container'>
-                        <Card.Img className='profile-image' variant="top" src={profileImage} />
-                    </div>
-                    <Card.Body className='pt-0'>
-                        <Card.Title className='profile-card-title'> 
-                            {candidate.Candidate}
-                        </Card.Title>
-                    </Card.Body>
-                    <ListGroup className="list-group-flush">
-                    {/* Facebook */}
-                    <ListGroup.Item variant="light" className="d-flex justify-content-between align-items-start">
-                        Facebook
-                        <Facebook size={20} className="me-2" color='#3b5998' />
-                    </ListGroup.Item>
-                    {candidate.Facebook_Campaign ?
-                        <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start"
-                        >
-                        <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                                <React.Fragment>
-                                    <a href={candidate.Facebook_Campaign} target="_blank" rel="noreferrer">
-                                    { "@" + candidate.Facebook_Campaign.split("/")[candidate.Facebook_Campaign.split("/").length-1]}
-                                    </a>
-                                    {candidate.Facebook_Campaign_followers ? 
-                                        <React.Fragment>
-                                            <br />
-                                            {"Followers: " + NumberConverter(candidate.Facebook_Campaign_followers)}
-                                        </React.Fragment>
-                                    : null} 
-                                    <br />
-                                </React.Fragment>
-                                </div>
-                            </div>
-                        </ListGroup.Item>
-                    : null}
-                    { candidate.Facebook_Official ? 
-                        <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start"
-                        >
-                        <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                                <a href={candidate.Facebook_Official} target="_blank" rel="noreferrer">
-                                {"@" + candidate.Facebook_Official.split("/")[candidate.Facebook_Official.split("/").length-1]}
-                                </a>
-                                {candidate.Facebook_Official_followers ?
-                                    <React.Fragment>
-                                        <br />
-                                        {"Followers: " + NumberConverter(candidate.Facebook_Official_followers)}
-                                    </React.Fragment>
-                                : null}
-                            </div>
-                        </div>
-                    </ListGroup.Item>
-                : null}
-                </ListGroup>
-                {/* Instagram */}
-                <ListGroup as="ol" className='trump-group' >
-                    <ListGroup.Item variant="light" className="d-flex justify-content-between align-items-start">
-                        Instagram
-                        <Instagram size={20} className="me-2" color='#8a3ab9' />
-                    </ListGroup.Item>
-                    
-                {candidate.Instagram_Campaign ?
-                    <ListGroup.Item
-                    as="li"
-                    className="d-flex justify-content-between align-items-start"
-                    >
-                        <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                                <a href={candidate.Instagram_Campaign} target="_blank" rel="noreferrer">
-                                {candidate.Instagram_Campaign && "@" + candidate.Instagram_Campaign.split("/")[candidate.Instagram_Campaign.split("/").length-1]}
-                                </a>
-                                {candidate.Instagram_Campaign_followers ?
-                                    <React.Fragment>
-                                        <br />
-                                        {"Followers: " + NumberConverter(candidate.Instagram_Campaign_followers)}
-                                        <br />
-                                    </React.Fragment>
-                                : null}
-                            </div>
-                        </div>
-                    </ListGroup.Item>
-                : null}
-                {candidate.Instagram_Official ?
-                    <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start"
-                    >
-                        <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                                <a href={candidate.Instagram_Official} target="_blank" rel="noreferrer">
-                                {"@" + candidate.Instagram_Official.split("/")[candidate.Instagram_Official.split("/").length-1]}
-                                </a>
-                                {candidate.Instagram_Official_followers ?
-                                <React.Fragment>
-                                    <br />
-                                    {"Followers: " + NumberConverter(candidate.Instagram_Official_followers)}
-                                </React.Fragment>
-                                : null}
-                            </div>
-                        </div>
-                    </ListGroup.Item>
-                : null}
-                </ListGroup>
-                {/* Twitter */}
-                <ListGroup as="ol" className='trump-group' >
-                    <ListGroup.Item variant="light" className="d-flex justify-content-between align-items-start">
-                        Twitter
-                        <Twitter size={20} className="me-2 float-left" color='#00acee' />
-                    </ListGroup.Item>
-                    {candidate.Twitter_Campaign ?
-                    <ListGroup.Item
-                    as="li"
-                    className="d-flex justify-content-between align-items-start"
-                    >
-                        <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                                <React.Fragment>
-                                    <a href={candidate.Twitter_Campaign} target="_blank" rel="noreferrer">
-                                    {candidate.Twitter_Campaign && "@" + candidate.Twitter_Campaign.split("/")[candidate.Twitter_Campaign.split("/").length-1]}
-                                    </a>
-                                    <br />
-                                    {candidate.Twitter_Campaign_followers && "Followers: " + NumberConverter(candidate.Twitter_Campaign_followers)}
-                                    <br />
-                                </React.Fragment>
-                                </div>
-                        </div>
-                    </ListGroup.Item>
-                    : null}
-                    {candidate.Twitter_Official ?
-                    <ListGroup.Item
-                    as="li"
-                    className="d-flex justify-content-between align-items-start"
-                    >
-                        <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                                <a href={candidate.Twitter_Official} target="_blank" rel="noreferrer">
-                                {"@" + candidate.Twitter_Official.split("/")[candidate.Twitter_Official.split("/").length-1]}
-                                </a>
-                                {candidate.Twitter_Official_followers ?
-                                    <React.Fragment>
-                                    <br />
-                                    {"Followers: " + NumberConverter(candidate.Twitter_Official_followers)}
-                                </React.Fragment>       
-                                : null}
-                            </div>
-                        </div>
-                    </ListGroup.Item>
-                    : null}
-                    </ListGroup>
-                </Card>
+        <Card >
+            <div className='image-container'>
+                <Card.Img className='profile-image' variant="top" src={profileImage} />
+            </div>
+            <Card.Body className='pt-0'>
+                <Card.Title className='profile-card-title'> 
+                    {candidate.Candidate}
+                </Card.Title>
+            </Card.Body>
+            <ListGroup className="list-group-flush">
+                
+            <ListGroup.Item as="li"
+            className="d-flex justify-content-between align-items-start"
+            >
+                    <Donate />
+            </ListGroup.Item>
+            
+            </ListGroup>
+        </Card>
         </Col>
         <Col xs={12} md={6} lg={6}>
         <Alert variant={candidate.Party === "Democrat" ? "primary" : candidate.Party === "Republican" ? "danger" : "success"}>
@@ -412,99 +278,6 @@ function Candidates() {
         <Alert variant="warning" className='mt-3'>
           Polling, RCP Average <a href={candidate.RCP_Poll_Average} rel="noreferrer" target="_blank"> realclearpolitics </a>
         </Alert>
-        {/* <Card className='mt-3'>
-            <Card.Body>
-                <Card.Title>Spending By Others</Card.Title>
-                <Card.Text>
-                Coverage Dates: 01/01/2020 to 12/31/2022
-                </Card.Text>
-            </Card.Body>
-            <ListGroup className="list-group-flush">
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        National Victory Action Fund
-                    </div>
-                    <span>1232</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Elect Republicans
-                    </div>
-                    <span>1232</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Women Speak Out PAC
-                    </div>
-                    <span>1432</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        TOTAL
-                    </div>
-                    <span><b>3432</b></span>
-                </ListGroup.Item>
-            </ListGroup>
-        </Card> */}
-        {/* In Opposition */}
-        {/* <Card className='mt-3'>
-            <Card.Body>
-                <Card.Title>In Opposition</Card.Title>
-                <Card.Text>
-                Coverage Dates: coming soon...
-                </Card.Text>
-            </Card.Body>
-            <ListGroup className="list-group-flush">
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Unidosus Action PAC
-                    </div>
-                    <span>coming soon...</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Retire Him
-                    </div>
-                    <span>coming soon...</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Moveon.org Political Action
-                    </div>
-                    <span>coming soon...</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Really American PAC
-                    </div>
-                    <span>coming soon...</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Vote Local Vote Blue
-                    </div>
-                    <span>coming soon...</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        For Our Future
-                    </div>
-                    <span>coming soon...</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        End Citizens United
-                    </div>
-                    <span>coming soon...</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        TOTAL
-                    </div>
-                    <span><b>coming soon...</b></span>
-                </ListGroup.Item>
-            </ListGroup>
-        </Card> */}
         </Col>
         <Col xs={12} md={3} lg={3}>
         {/* Endorsements */}

@@ -1,0 +1,46 @@
+/* Light Mode */
+.light {
+    background-color: #fff;
+    color: #000;
+}
+
+/* Dark Mode */
+.dark {
+    background-color: #121212;
+    color: #fff;
+}
+
+.card {
+    background-color: #fff;
+    border: 1px solid #ccc;
+}
+
+.dark .card {
+    background-color: #2c2c2c;
+    border: 1px solid #444;
+}
+
+.theme-toggle-btn {
+    margin-top: 20px;
+}
+
+.dark span {
+    color: #fff;
+}
+
+.dark .my-footer {
+    background-color: #2c2c2c;
+    color: #fff;
+}
+
+.dark label {
+    color: #fff;
+}
+
+.dark .amplify-select  {
+    color: #fff;
+}
+
+.dark .amplify-input  {
+    color: #fff;
+}
