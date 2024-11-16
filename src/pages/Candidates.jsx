@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import {Container, Badge, Row, Col, Card, ListGroup, Alert } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
-
 import democraticLogo from "../assets/logo/democraticLogo.png";
 import republicanLogo from "../assets/logo/republicanLogo.png";
 import independentLogo from "../assets/logo/independentLogo.jpg";
 import Tramp from "../assets/trump.png";
+import avatar from "../assets/logo/avatar.png";
+
 
 import {Globe, Calendar3 } from 'react-bootstrap-icons';
-import {Route, Link, Routes, useParams, json} from 'react-router-dom';
+import {useParams, useLocation} from 'react-router-dom';
 import NumberConverter from '../functions/NumberConverter';
 import dayjs from "dayjs";
 
@@ -16,8 +17,17 @@ import poliData from "../data/polidata.json";
 
 import stateDataSet from "../data/statedata.json";
 import Donate  from "../components/donate"
+import VotingDeadline from "../components/VotingDeadline";
+import deadline_data from "../data/voting_dates_all_cycles.json";
 
 function Candidates() {
+
+    const [candidate, setCandidate] = useState();
+    const [committee, setCommittee] = useState(null);
+    const [committeeReport, setCommitteeReport] = useState();
+
+
+    const [deadlines, setDeadlines] = useState({});
 
     const loading = <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>
     
@@ -25,396 +35,293 @@ function Candidates() {
     // let DEMO_KEY = "Dg8InCSmPPuEjN2CCS4S5yHJfYdrAlMvLMSW4uWS"
     
     const {id} = useParams();
-        
-    const candidate = (poliData.filter(item => item.FEC_Data.split("/")[item.FEC_Data.split("/").length-2] === id))[0];
-    const profileImage = "https://politimap-storage-5e73cf8662941-staging.s3.ap-northeast-1.amazonaws.com/public/profile_image/" + candidate.Candidate.replace(/ /g, '') + ".jpeg";
-    console.log(candidate);
+    const location = useLocation();
 
-    const statedara = stateDataSet.filter(item => item.State === candidate.State)[0];
 
-    const [apiData, setapiData] = useState(null);
-    const [apiData2, setapiData2] = useState([]);
-    const [apiData3, setapiData3] = useState([]);
-
-     const getCandidateAPI = async () => {
-        if(candidate.Principal_Campaign_Committee_ID !== null){
-            const response = await fetch(`https://api.open.fec.gov/v1/committee/${candidate.Principal_Campaign_Committee_ID}/reports/?api_key=${DEMO_KEY}`);
-            const data = await response.json();
-            console.log(response.status);
-            setapiData(data.results[0]);  
+    const filter_deadline_data = (year, state) => {
+        if (!deadline_data[year]) {
+            return `No data found for year ${year}`;
         }
-        if (candidate.Sponsored_Leadership_PAC_ID !== null){
-            if(candidate.Sponsored_Leadership_PAC_ID.includes(",")){
-                const CIDs = candidate.Sponsored_Leadership_PAC_ID.split(",");
-                for (let i = 0; i < CIDs.length; i++) {
-                    const response2 = await fetch(`https://api.open.fec.gov/v1/committee/${CIDs[i]}/reports/?api_key=${DEMO_KEY}`);
-                    const data2 = await response2.json();
-                    console.log(response2.status);
-                    setapiData2(apiData2 => [...apiData2, data2.results]);
-                } 
+        
+        const stateData = deadline_data[year].find(
+            (entry) => entry.state.toLowerCase() === state.toLowerCase()
+        );
+        if(stateData)
+        {
+            setDeadlines(stateData);
+        }
+    
+    }
+
+    const fecth_candidate = async () => {
+        const url = `https://api.open.fec.gov/v1/candidate/${id}?api_key=${DEMO_KEY}`;
+        
+        try {
+          // Sending GET request
+          const response = await fetch(url);
+      
+          // Check if the response is OK (status 200-299)
+          if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+          }
+      
+          // Parse JSON response
+          const data = await response.json();
+      
+          // You can log the data or handle it as needed
+          setCandidate(data.results[0]);
+          console.log(data.results[0])
+        } catch (error) {
+          // Handle any errors that may occur
+          console.error('There was an error fetching the candidate data:', error);
+        }
+      };
+
+    const fecth_candidate_committee = async () => {
+        const queryParams = new URLSearchParams(location.search);
+        const year = queryParams.get("year");
+        const url = `https://api.open.fec.gov/v1/candidate/${id}/committees/?api_key=${DEMO_KEY}&year=${year}&designation=P`;
+    
+    try {
+        // Sending GET request
+        const response = await fetch(url);
+    
+        // Check if the response is OK (status 200-299)
+        if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+        }
+    
+        // Parse JSON response
+        const data = await response.json();
+    
+        // You can log the data or handle it as needed
+        setCommittee(data.results[0]);
+        console.log(data.results[0])
+    } catch (error) {
+        // Handle any errors that may occur
+        console.error('There was an error fetching the candidate data:', error);
+    }
+    };
+
+    const fecth_candidate_committee_report = async () => {
+        const queryParams = new URLSearchParams(location.search);
+        const year = queryParams.get("year");
+        const url = `https://api.open.fec.gov/v1/committee/${committee.committee_id}/reports/?api_key=${DEMO_KEY}&year=${year}&is_amended=false&type=S`;
+    
+        try {
+            // Sending GET request
+            const response = await fetch(url);
+        
+            // Check if the response is OK (status 200-299)
+            if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
             }
-            else{
-                const response3 = await fetch(`https://api.open.fec.gov/v1/committee/${candidate.Sponsored_Leadership_PAC_ID}/reports/?api_key=${DEMO_KEY}`);
-                const data3 = await response3.json();
-                console.log(response3.status);
-                setapiData3(data3.results);
-            }
-        }};
+        
+            // Parse JSON response
+            const data = await response.json();
+        
+            // You can log the data or handle it as needed
+            setCommitteeReport(data.results);
+            console.log(data.results[0])
+        } catch (error) {
+            // Handle any errors that may occur
+            console.error('There was an error fetching the candidate data:', error);
+        }
+    };
+      
+      
+    
+
+    const candidate_static = (poliData.filter(item => item.FEC_Data.split("/")[item.FEC_Data.split("/").length-2] === id))[0];
+    let profileImage = avatar
+    if(candidate_static)
+    {
+         profileImage = "https://politimap-storage-5e73cf8662941-staging.s3.ap-northeast-1.amazonaws.com/public/profile_image/" + candidate_static.Candidate.replace(/ /g, '') + ".jpeg";
+    }
+
+
+    useEffect(() => {
+        fecth_candidate().then( () => {});
+        fecth_candidate_committee().then( () => {});
+    }, []);
+
+    useEffect(() => {
+        if(committee){
+            fecth_candidate_committee_report().then( () => {});
+        }
+        
+    }, [committee]);
+
+    
     
       
     useEffect(() => {
-        getCandidateAPI();
-    }, []);
+        const queryParams = new URLSearchParams(location.search);
+        const year = queryParams.get("year");
+        const state = queryParams.get("state");
+
+        if (year && state) {
+            filter_deadline_data(year, state);
+        }
+
+    }, []); // Re-run when year or state changes
 
   return (
     <Container>
-      <Row>
-        <Col xs={12} md={3} lg={3}>
-        <Card >
-            <div className='image-container'>
-                <Card.Img className='profile-image' variant="top" src={profileImage} />
-            </div>
-            <Card.Body className='pt-0'>
-                <Card.Title className='profile-card-title'> 
-                    {candidate.Candidate}
-                </Card.Title>
-            </Card.Body>
-            <ListGroup className="list-group-flush">
-                
-            <ListGroup.Item as="li"
-            className="d-flex justify-content-between align-items-start"
-            >
-                    <Donate />
-            </ListGroup.Item>
-            
-            </ListGroup>
-        </Card>
-        </Col>
-        <Col xs={12} md={6} lg={6}>
-        <Alert variant={candidate.Party === "Democrat" ? "primary" : candidate.Party === "Republican" ? "danger" : "success"}>
-          {"Politimap " + candidate.State + ", " + candidate.Party}
-          <span style={{ float: "right" }}>
-          {candidate.Party === "Democrat" ? <img className="party-logo" src={democraticLogo} alt="logo" /> : candidate.Party === "Republican" ? <img className="party-logo" src={republicanLogo} alt="logo" /> : <img className="party-logo" src={independentLogo} alt="logo" />}
-          </span>
-        </Alert>
-        {/* Financial Summary */}
-        <Card>
-            <Card.Body>
-                <Card.Title>Principal Campaign Committee | {apiData ? <a href={apiData.html_url} target="_blank" rel="noreferrer">GOVsite</a> : null} </Card.Title>
-                Coverage Dates: {apiData ? dayjs(apiData.coverage_start_date).format('MM/DD/YYYY') + " to " + dayjs(apiData.coverage_end_date).format('MM/DD/YYYY')  
-                : 
-                loading
-                    }
-            </Card.Body>
-            <ListGroup className="list-group-flush">
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Total Receipts
+        { candidate ? (
+            <Row>
+                <Col xs={12} md={3} lg={3}>
+                <Card >
+                    <div className='image-container'>
+                        <Card.Img className='profile-image' variant="top" src={profileImage} />
                     </div>
-                    <span>{apiData ? NumberConverter(apiData.total_receipts_ytd) 
-                    : 
-                    loading
-                    }</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Total Disbursements
-                    </div>
-                    <span>{apiData ? NumberConverter(apiData.total_disbursements_ytd) 
-                        : 
-                    loading
-                    }
-                    </span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Ending Cash On Hand ( {apiData ? dayjs(apiData.coverage_end_date).format('MM/DD/YYYY') : "not found"} )
-                    </div>
-                    <span><b>{apiData ? NumberConverter(apiData.cash_on_hand_end_period) 
-                        : 
-                    loading
-                    }
-                    </b></span>
-                </ListGroup.Item>
-            </ListGroup>
-        </Card>
-        {/* Sponsored Leadership PACs */}
-        {apiData3.length !== 0 ? <h5 className='committee-name'>Committee Name: {apiData3[0].committee_name}</h5> : null}
-        {apiData3.length !== 0 ? 
-        <Card className='mt-3'>
-            <Card.Body>
-                <Card.Title> Sponsored Leadership PACs | Cycle: {apiData3[0].cycle} | <a href={apiData3[0].html_url} target="_blank" rel="noreferrer">GOVsite</a></Card.Title>
-                <b>Reclaim America PAC </b>
-                Coverage Dates: {apiData3[0] ? dayjs(apiData3[0].coverage_start_date).format('MM/DD/YYYY') + " to " + dayjs(apiData3[0].coverage_end_date).format('MM/DD/YYYY') + " (" + apiData3[0].report_type_full + ")"
-                : 
-                loading
-                }
-            </Card.Body>
-            <ListGroup className="list-group-flush">
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Total Receipts
-                    </div>
-                    <span>{apiData3[0] ? NumberConverter(apiData3[0].total_receipts_ytd) 
-                    : 
-                    loading
-                    }</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Total Disbursements
-                    </div>
-                    <span>{apiData3[0] ? NumberConverter(apiData3[0].total_disbursements_ytd) 
-                        : 
-                    loading
-                    }
-                    </span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Ending Cash On Hand ( {apiData3[0] ? dayjs(apiData3[0].coverage_end_date).format('MM/DD/YYYY') : "not found"} )
-                    </div>
-                    <span><b>{apiData3[0] ? NumberConverter(apiData3[0].cash_on_hand_end_period) 
-                        : 
-                    loading
-                    }
-                    </b></span>
-                </ListGroup.Item>
-            </ListGroup>
-        </Card>
-        : null}
-        {apiData2[0] ? <h5 className='committee-name'>Committee Name: {apiData2[0][0].committee_name}</h5> : null}
-        {apiData2[0] ? 
-        <Card className='mt-3'>
-            <Card.Body>
-                <Card.Title> Sponsored Leadership PACs | Cycle: {apiData2[0][0].cycle} | <a href={apiData2[0][0].html_url} target="_blank" rel="noreferrer">GOVsite</a></Card.Title>
-                <b>Reclaim America PAC </b>
-                Coverage Dates: {apiData2[0][0] ? dayjs(apiData2[0][0].coverage_start_date).format('MM/DD/YYYY') + " to " + dayjs(apiData2[0][0].coverage_end_date).format('MM/DD/YYYY') + " (" + apiData2[0][0].report_type_full + ")"
-                : 
-                loading
-                }
-            </Card.Body>
-            <ListGroup className="list-group-flush">
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Total Receipts
-                    </div>
-                    <span>{apiData2[0][0] ? NumberConverter(apiData2[0][0].total_receipts_ytd) 
-                    : 
-                    loading
-                    }</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Total Disbursements
-                    </div>
-                    <span>{apiData2[0][0] ? NumberConverter(apiData2[0][0].total_disbursements_ytd) 
-                        : 
-                    loading
-                    }
-                    </span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Ending Cash On Hand ( {apiData2[0][0] ? dayjs(apiData2[0][0].coverage_end_date).format('MM/DD/YYYY') : "not found"} )
-                    </div>
-                    <span><b>{apiData2[0][0] ? NumberConverter(apiData2[0][0].cash_on_hand_end_period) 
-                        : 
-                    loading
-                    }
-                    </b></span>
-                </ListGroup.Item>
-            </ListGroup>
-        </Card>
-        : null }
-        {apiData2[1] ? <h5 className='committee-name'> Committee Name: {apiData2[1][0].committee_name}</h5> : null}
-        {apiData2[1] ? 
-        <Card className='mt-3' >
-            <Card.Body>
-                <Card.Title> Sponsored Leadership PACs | Cycle: {apiData2[1][0].cycle} | <a href={apiData2[1][0].html_url} target="_blank" rel="noreferrer">GOVsite</a></Card.Title>
-                <b>Reclaim America PAC </b>
-                Coverage Dates: {apiData2[1][0] ? dayjs(apiData2[1][0].coverage_start_date).format('MM/DD/YYYY') + " to " + dayjs(apiData2[1][0].coverage_end_date).format('MM/DD/YYYY') + " (" + apiData2[1][0].report_type_full + ")"
-                : 
-                loading
-                }
-            </Card.Body>
-            <ListGroup className="list-group-flush">
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Total Receipts
-                    </div>
-                    <span>{apiData2[1][0] ? NumberConverter(apiData2[1][0].total_receipts_ytd) 
-                    : 
-                    loading
-                    }</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Total Disbursements
-                    </div>
-                    <span>{apiData2[1][0] ? NumberConverter(apiData2[1][0].total_disbursements_ytd) 
-                        : 
-                    loading
-                    }
-                    </span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                    <div className="fw-bold">
-                        Ending Cash On Hand ( {apiData2[1][0] ? dayjs(apiData2[1][0].coverage_end_date).format('MM/DD/YYYY') : "not found"} )
-                    </div>
-                    <span><b>{apiData2[1][0] ? NumberConverter(apiData2[1][0].cash_on_hand_end_period) 
-                        : 
-                    loading
-                    }
-                    </b></span>
-                </ListGroup.Item>
-            </ListGroup>
-        </Card>
-         : null}
-        {/* Spending By Others */}
-        <Alert variant="warning" className='mt-3'>
-        Spending By Others <a href={candidate.Spending_by_Others_to_Support_or_Oppose} rel="noreferrer" target="_blank"> to Support and Oppose </a>
-        </Alert>
-        <Alert variant="warning" className='mt-3'>
-          Polling, RCP Average <a href={candidate.RCP_Poll_Average} rel="noreferrer" target="_blank"> realclearpolitics </a>
-        </Alert>
-        </Col>
-        <Col xs={12} md={3} lg={3}>
-        {/* Endorsements */}
-        { candidate.TrumpEndorsed === 'Yes' || candidate.Endorsements.length ? (
-        <Card className='mb-3'>
-            <Card.Body>
-                <Card.Title>Endorsements</Card.Title>
-            </Card.Body>
-            <ListGroup as="ol" className='trump-group' >
-            {candidate.TrumpEndorsed ?
-                <ListGroup.Item
-                    as="li"
-                    className="d-flex justify-content-between align-items-start"
-                >
-                    <img className="trump" src={Tramp} alt="Tramp" />
-                    <div className="ms-2 me-auto">
-                        <h5><Badge bg="info">TrumpEndorsed</Badge></h5>
-                    </div>
-                </ListGroup.Item>
-                : null}
-                {candidate.Endorsements ? 
-                    <ListGroup.Item
-                        as="li"
-                        className="d-flex justify-content-between align-items-start"
-                    >
-                        <a href={candidate.Endorsements} target="_blank" rel="noreferrer" >
-                            <h5><Badge bg="success">Other Endorsements</Badge></h5>
-                        </a>
+                    <Card.Body className='pt-0'>
+                        <Card.Title className='profile-card-title'> 
+                            {candidate.name}
+                        </Card.Title>
+                    </Card.Body>
+                    <ListGroup className="list-group-flush">
+                        
+                    <ListGroup.Item as="li" className="d-flex justify-content-between align-items-start">
+                        <Donate />
                     </ListGroup.Item>
-                : null}
-            </ListGroup>
-        </Card>
-        ) : null}
-        {/* Social */}
-        <Card>
-            {/* Facebook */}
-            <ListGroup as="ol" className='trump-group' >
-                <ListGroup.Item>
-                        <Globe size={20} className="me-2" />
-                            <a href={candidate.Campaign_Website} target="_blank" rel="noreferrer" >Link to Campaign Website</a>
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                            <Globe size={20} className="me-2" />
-                            <a href={statedara.Agency_Website} target="_blank" rel="noreferrer" >Link to Agency Website</a>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.General_Election_Date}
-                            </div>
-                            General Election Date
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">{statedara.Deadline_Voter_Registration_InPerson}</div>
-                            Deadline for Voter Registration InPerson
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.Deadline_Voter_Registration_Online}
-                            </div>
-                            Deadline for Voter Registration Online
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.Deadline_Voter_Registration_By_Mail}
-                            </div>
-                            Deadline for Voter Registration By Mail
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.Deadline_to_Request_Absentee_Ballot_In_Person}
-                            </div>
-                            Deadline to Request Absentee Ballot In Person
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.Deadline_to_Request_Absentee_Ballot_Online}
-                            </div>
-                            Deadline to Request Absentee Ballot Online
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.Deadline_to_Request_Absentee_Ballot_By_Mail}
-                            </div>
-                            Deadline to Request Absentee Ballot By Mail
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.Deadline_to_Return_Ballot_In_Person}
-                            </div>
-                            Deadline to Return Ballot In Person
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.Deadline_to_Return_Ballot_By_Mail}
-                            </div>
-                            Deadline to Return Ballot By Mail
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="d-flex justify-content-between align-items-start">
-                            <Calendar3 size={20} className="me-2" />
-                            <div className="ms-2 me-auto">
-                            <div className="fw-bold">
-                            {statedara.Early_Voting_Dates}
-                            </div>
-                            Early Voting Dates
-                            </div>
-                        </ListGroup.Item>
-            </ListGroup>
-        </Card>
-        </Col>
-      </Row>
+                    
+                    </ListGroup>
+                </Card>
+                </Col>
+                <Col xs={12} md={6} lg={6}>
+
+                    <Alert variant={candidate.party === "DEM" ? "primary" : candidate.party === "REP" ? "danger" : "success"}>
+                        {"Politimap " + candidate.state + ", " + candidate.party_full}
+                        <span style={{ float: "right" }}>
+                            {candidate.party === "DEM" ? <img className="party-logo" src={democraticLogo} alt="logo" /> : candidate.party === "REP" ? <img className="party-logo" src={republicanLogo} alt="logo" /> : <img className="party-logo" src={independentLogo} alt="logo" />}
+                        </span>
+                    </Alert>
+
+                    {/* Financial Summary */}
+                    {committeeReport && committeeReport.length > 0 ? (
+                        committeeReport.map((report) => (
+                            <Card key={report.file_number} className="mb-3">
+                                <Card.Body>
+                                    <Card.Title>
+                                        Principal Campaign Committee |{" "}
+                                        <a href={report.html_url} target="_blank" rel="noreferrer">
+                                            GOVsite
+                                        </a>
+                                    </Card.Title>
+                                    <p className='mt-2'><strong>Committee Name: </strong>{report.committee_name}</p>
+                                    <p>
+                                        <strong>Coverage Dates:</strong>{" "}
+                                        {`${dayjs(report.coverage_start_date).format("MM/DD/YYYY")} to ${dayjs(
+                                            report.coverage_end_date
+                                        ).format("MM/DD/YYYY")}`}
+                                    </p>
+                                </Card.Body>
+                                <ListGroup className="list-group-flush">
+                                    <ListGroup.Item className="d-flex justify-content-between align-items-start">
+                                        <div className="fw-bold">Total Receipts</div>
+                                        <span className="black-span">
+                                            ${NumberConverter(report.total_receipts_ytd)}
+                                        </span>
+                                    </ListGroup.Item>
+                                    <ListGroup.Item className="d-flex justify-content-between align-items-start">
+                                        <div className="fw-bold">Total Disbursements</div>
+                                        <span className="black-span">
+                                            ${NumberConverter(report.total_disbursements_ytd)}
+                                        </span>
+                                    </ListGroup.Item>
+                                    <ListGroup.Item className="d-flex justify-content-between align-items-start">
+                                        <div className="fw-bold">Ending Cash On Hand</div>
+                                        <span className="black-span">
+                                            ${NumberConverter(report.cash_on_hand_end_period)}
+                                        </span>
+                                    </ListGroup.Item>
+                                    <ListGroup.Item className="d-flex justify-content-between align-items-start">
+                                        <div className="fw-bold">Net Contributions</div>
+                                        <span className="black-span">
+                                            ${NumberConverter(report.net_contributions_ytd)}
+                                        </span>
+                                    </ListGroup.Item>
+                                    <ListGroup.Item className="d-flex justify-content-between align-items-start">
+                                        <div className="fw-bold">Operating Expenditures</div>
+                                        <span className="black-span">
+                                            ${NumberConverter(report.operating_expenditures_ytd)}
+                                        </span>
+                                    </ListGroup.Item>
+                                    <ListGroup.Item className="d-flex justify-content-between align-items-start">
+                                        <div className="fw-bold">Total Individual Contributions</div>
+                                        <span className="black-span">
+                                            ${NumberConverter(report.total_individual_contributions_ytd)}
+                                        </span>
+                                    </ListGroup.Item>
+                                </ListGroup>
+                            </Card>
+                        ))
+                    ) : (
+                        loading
+                    )}
+
+
+
+                {/* Spending By Others */}
+                {candidate_static && (
+                    <>
+                        <Alert variant="warning" className='mt-3'>
+                        Spending By Others <a href={candidate_static.Spending_by_Others_to_Support_or_Oppose} rel="noreferrer" target="_blank"> to Support and Oppose </a>
+                        </Alert>
+                        <Alert variant="warning" className='mt-3'>
+                        Polling, RCP Average <a href={candidate_static.RCP_Poll_Average} rel="noreferrer" target="_blank"> realclearpolitics </a>
+                        </Alert>
+                    </>
+                ) }
+                
+
+
+                </Col>
+
+                <Col xs={12} md={3} lg={3}>
+                {/* Endorsements */}
+                    {   candidate_static && (candidate_static.TrumpEndorsed === 'Yes' || candidate_static.Endorsements.length) ? 
+                    (
+                        <Card className='mb-3'>
+                            <Card.Body>
+                                <Card.Title>Endorsements</Card.Title>
+                            </Card.Body>
+                            <ListGroup as="ol" className='trump-group' >
+                            {candidate_static.TrumpEndorsed ?
+                                <ListGroup.Item
+                                    as="li"
+                                    className="d-flex justify-content-between align-items-start"
+                                >
+                                    <img className="trump" src={Tramp} alt="Tramp" />
+                                    <div className="ms-2 me-auto">
+                                        <h5><Badge bg="info">TrumpEndorsed</Badge></h5>
+                                    </div>
+                                </ListGroup.Item>
+                                : null}
+                                {candidate_static.Endorsements ? 
+                                    <ListGroup.Item
+                                        as="li"
+                                        className="d-flex justify-content-between align-items-start"
+                                    >
+                                        <a href={candidate_static.Endorsements} target="_blank" rel="noreferrer" >
+                                            <h5><Badge bg="success">Other Endorsements</Badge></h5>
+                                        </a>
+                                    </ListGroup.Item>
+                                : null}
+                            </ListGroup>
+                        </Card>
+                    ) : null }
+
+
+                <VotingDeadline data={deadlines} />
+            
+                </Col>
+            </Row>
+        ) : <Row>
+            loading
+            </Row>}
+      
     </Container>
   );
 }

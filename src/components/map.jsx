@@ -111,7 +111,7 @@ const MapChart = ({ electionCycle, office, terms, state, party }) => {
                   {stateCandidates.map((candidate, index) => (
                       <ListGroup.Item
                           key={index}
-                          to={`/candidates/${candidate.candidate_id}`}
+                          to={`/candidates/${candidate.candidate_id}?year=${startYear}&state=${geo.properties.name}`}
                           as={Link}
                           className="d-flex justify-content-between align-items-start"
                       >
